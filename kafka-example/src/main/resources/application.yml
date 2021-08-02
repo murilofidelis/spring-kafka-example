@@ -1,0 +1,61 @@
+logging:
+  level:
+    ROOT: INFO
+    org:
+      springframework:
+        cloud:
+          stream: DEBUG
+
+server:
+  port: 8082
+  servlet:
+    context-path: /api
+
+spring:
+  application:
+    name: loja-consumidor-service
+  profiles:
+    active: dev
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+
+  datasource:
+    url: jdbc:h2:mem:venda_db2
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+    test-on-borrow: true
+    validation-query: SELECT 1
+    test-while-idle: true
+    time-between-eviction-runs-millis: 90000
+
+  jpa:
+    database-platform: org.hibernate.dialect.H2Dialect
+    database: H2
+    show-sql: false
+    properties:
+      hibernate.format_sql: true
+      hibernate.temp.use_jdbc_metadata_defaults: false
+    hibernate:
+      ddl-auto: 'update'
+
+  kafka:
+    bootstrap-servers: localhost:9092
+    listener:
+      ack-mode: manual
+    consumer:
+      auto-offset-reset: earliest
+      enable-auto-commit: false
+      max-poll-records: 2
+      group-id: sales-group
+    topic:
+      name: sales
+      dlt: sales.DLT
+      max-retry: 3
+
+app:
+
+
+
