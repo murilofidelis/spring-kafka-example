@@ -1,11 +1,12 @@
 package br.com.kafka.example.service.impl;
 
 import br.com.kafka.example.dto.SaleDTO;
+import br.com.kafka.example.exception.InvalidDataException;
 import br.com.kafka.example.mapper.SaleMapper;
-import br.com.kafka.example.service.SaleService;
-import br.com.kafka.example.exception.AppException;
 import br.com.kafka.example.repository.SaleRepository;
+import br.com.kafka.example.service.SaleService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -35,15 +36,17 @@ public class SaleServiceImpl implements SaleService {
     private void validated(SaleDTO dto) {
         if (anyIsNull(
                 dto.getCodProduct(),
-                dto.getDescrition(),
+                dto.getDescription(),
                 dto.getBrand(),
                 dto.getCodUser(),
                 dto.getPrice())) {
-            throw new AppException("invalid data");
+            throw new InvalidDataException("invalid data");
         }
     }
 
+    @SneakyThrows
     private boolean anyIsNull(Object... data) {
+        Thread.sleep(500);
         for (Object datum : data) {
             if (datum == null) {
                 return true;

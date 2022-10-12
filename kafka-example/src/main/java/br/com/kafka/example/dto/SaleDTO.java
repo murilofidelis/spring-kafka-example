@@ -6,15 +6,15 @@ import lombok.ToString;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.time.LocalTime;
 
 @Getter
 @Setter
-@ToString
 public class SaleDTO implements Serializable {
 
     private String codProduct;
 
-    private String descrition;
+    private String description;
 
     private String brand;
 
@@ -22,4 +22,14 @@ public class SaleDTO implements Serializable {
 
     private Integer codUser;
 
+    private LocalTime hour;
+
+    @Override
+    public String toString() {
+        return "SaleDTO{" +
+                "codProduct='" + codProduct + '\'' +
+                ", description='" + description + '\'' +
+                ", hour=" + hour +
+                '}';
+    }
 }

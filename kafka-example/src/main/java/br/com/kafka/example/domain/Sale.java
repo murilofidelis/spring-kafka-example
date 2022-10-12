@@ -10,8 +10,6 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import java.math.BigDecimal;
 
 @Getter
@@ -28,10 +26,8 @@ public class Sale {
     @Column(name = "COD_PRODUCT")
     private String codProduct;
 
-    @NotNull
-    @Size(max = 250)
     @Column(name = "DESCRIPTION")
-    private String descrition;
+    private String description;
 
     @Column(name = "BRAND")
     private String brand;

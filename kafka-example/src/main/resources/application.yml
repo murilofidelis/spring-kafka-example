@@ -7,13 +7,13 @@ logging:
           stream: DEBUG
 
 server:
-  port: 8082
+  port: ${PORT:8080}
   servlet:
     context-path: /api
 
 spring:
   application:
-    name: loja-consumidor-service
+    name: sales-service
   profiles:
     active: dev
   h2:
@@ -42,19 +42,25 @@ spring:
       ddl-auto: 'update'
 
   kafka:
-    bootstrap-servers: localhost:9092
-    listener:
-      ack-mode: manual
+    bootstrap-servers: localhost:19092,localhost:29092,localhost:39092
+    max-retry: 3
+    replications: 3
+    default-partitions: 3
     consumer:
       auto-offset-reset: earliest
-      enable-auto-commit: false
-      max-poll-records: 2
+      enable-auto-commit: true
+      max-poll-records: 100
       group-id: sales-group
-    topic:
-      name: sales
-      dlt: sales.DLT
-      max-retry: 3
-
+    topics:
+      sales:
+        name: sales
+        partitions: 6
+      sales-dlt:
+        name: sales.DLT
+      sales-batch:
+        name: sales-batch
+      sales-batch-dtl:
+        name: sales-batch.DLT
 app:
 
 
