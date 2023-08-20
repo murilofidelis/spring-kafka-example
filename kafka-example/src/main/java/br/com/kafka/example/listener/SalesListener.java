@@ -3,6 +3,7 @@ package br.com.kafka.example.listener;
 import br.com.kafka.example.dto.SaleDTO;
 import br.com.kafka.example.service.SaleService;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -26,7 +27,7 @@ public class SalesListener {
             topics = "${spring.kafka.topics.sales.name}",
             groupId = "${spring.kafka.consumer.group-id}",
             containerFactory = "kafkaListenerContainerFactory",
-            concurrency = "6")
+            concurrency = "1")
     public void salesListener(@Payload ConsumerRecord<String, SaleDTO> record) {
         log.info("Received Message, offset: {}, partition: {}", record.offset(), record.partition());
         log.info("key: {}", record.key());
@@ -49,7 +50,9 @@ public class SalesListener {
         log.info("FINISH Message: {} size: {} ", cods, size);
     }
 
+    @SneakyThrows
     private void process(SaleDTO sale) {
+        Thread.sleep(1);
         saleService.save(sale);
     }
 

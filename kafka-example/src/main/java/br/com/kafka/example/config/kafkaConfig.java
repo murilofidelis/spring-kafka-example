@@ -3,9 +3,11 @@ package br.com.kafka.example.config;
 import br.com.kafka.example.dto.SaleDTO;
 import br.com.kafka.example.exception.InvalidDataException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.header.Headers;
@@ -32,7 +34,6 @@ import org.springframework.kafka.listener.RecoveringBatchErrorHandler;
 import org.springframework.kafka.listener.SeekToCurrentErrorHandler;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
-import org.springframework.scheduling.annotation.EnableAsync;
 import org.springframework.util.backoff.FixedBackOff;
 
 import java.nio.charset.StandardCharsets;
@@ -41,7 +42,6 @@ import java.util.Map;
 import java.util.function.BiFunction;
 
 @Slf4j
-@EnableAsync
 @EnableKafka
 @Configuration
 public class kafkaConfig {
@@ -51,6 +51,19 @@ public class kafkaConfig {
 
     @Value("${spring.kafka.max-retry}")
     private Integer maxRetry;
+
+    @Bean
+    public AdminClient adminClient() {
+        return AdminClient.create(kafkaProperties.buildProducerProperties());
+    }
+
+    @Bean
+    public KafkaConsumer<String, String> kafkaConsumer() {
+        Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        return new KafkaConsumer<>(props);
+    }
 
     @Bean
     public ConsumerFactory<String, SaleDTO> salesConsumerFactory() {
