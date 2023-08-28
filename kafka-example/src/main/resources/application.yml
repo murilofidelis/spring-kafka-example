@@ -46,6 +46,8 @@ spring:
     max-retry: 3
     replications: 3
     default-partitions: 3
+    max-poll-records: 500
+    max-poll-interval-ms: 120000
     consumer:
       auto-offset-reset: earliest
       enable-auto-commit: true
@@ -63,5 +65,26 @@ spring:
         name: sales-batch.DLT
 app:
 
+---
+
+spring:
+  config:
+    activate:
+      on-profile: pg
+  datasource:
+    driverClassName: org.postgresql.Driver
+    url: jdbc:postgresql://localhost:5432/db_01?currentSchema=sales
+    username: postgres
+    password: 123456
+  jpa:
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+    database: POSTGRESQL
+    show-sql: false
+    open-in-view: false
+    properties:
+      hibernate.format_sql: true
+    hibernate:
+      dialect:  org.hibernate.dialect.PostgreSQLDialect
+      ddl-auto: 'none'
 
 

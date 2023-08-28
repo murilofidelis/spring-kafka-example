@@ -15,15 +15,13 @@ public class MonitoringTask {
 
     private final LagAnalyzerService lagAnalyzerService;
 
-
-    @Scheduled(fixedDelay = 5000L)
+    @Scheduled(fixedDelay = 60000L)
     public void liveLagAnalysis() throws ExecutionException, InterruptedException {
         long lag = lagAnalyzerService.getLag("sales-group", "sales", 6);
         log.info("LAG: {}", lag);
         if (lag == 0) {
             log.info("------------------FIM----------------");
         }
-
     }
 
     private void countMessage() {

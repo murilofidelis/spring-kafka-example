@@ -4,7 +4,6 @@ import br.com.kafka.example.dto.SaleDTO;
 import br.com.kafka.example.exception.InvalidDataException;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.admin.AdminClient;
-import org.apache.kafka.clients.admin.NewTopic;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,7 +20,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.KafkaException;
 import org.springframework.kafka.annotation.EnableKafka;
 import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
-import org.springframework.kafka.config.TopicBuilder;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaProducerFactory;
@@ -76,9 +74,17 @@ public class kafkaConfig {
     @Bean(name = "kafkaListenerContainerFactory")
     public ConcurrentKafkaListenerContainerFactory<String, SaleDTO> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, SaleDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(this.salesConsumerFactory());
+        Map<String, Object> props = new HashMap<>(kafkaProperties.buildProducerProperties());
+        props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
+        props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.FALSE);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 60000);
+        DefaultKafkaConsumerFactory<String, SaleDTO> kafkaConsumerFactory = new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(SaleDTO.class, false));
+        factory.setConsumerFactory(kafkaConsumerFactory);
         factory.setErrorHandler(seekToCurrentErrorHandler());
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        factory.getContainerProperties().setSyncCommits(Boolean.TRUE);
         return factory;
     }
 
@@ -104,47 +110,6 @@ public class kafkaConfig {
     public KafkaTemplate<Object, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
-
-    @Bean
-    public NewTopic salesTopic(@Value("${spring.kafka.topics.sales.name}") String topic,
-                               @Value("${spring.kafka.topics.sales.partitions}") Integer partitions,
-                               @Value("${spring.kafka.replications}") Integer replications) {
-        return TopicBuilder.name(topic)
-                .partitions(partitions)
-                .replicas(replications)
-                .build();
-    }
-
-    @Bean
-    public NewTopic salesDltTopic(@Value("${spring.kafka.topics.sales-dlt.name}") String topic,
-                                  @Value("${spring.kafka.default-partitions}") Integer partitions,
-                                  @Value("${spring.kafka.replications}") Integer replications) {
-        return TopicBuilder.name(topic)
-                .partitions(partitions)
-                .replicas(replications)
-                .build();
-    }
-
-    @Bean
-    public NewTopic salesBatchTopic(@Value("${spring.kafka.topics.sales-batch.name}") String topic,
-                                    @Value("${spring.kafka.default-partitions}") Integer partitions,
-                                    @Value("${spring.kafka.replications}") Integer replications) {
-        return TopicBuilder.name(topic)
-                .partitions(partitions)
-                .replicas(replications)
-                .build();
-    }
-
-    @Bean
-    public NewTopic salesBatchDltTopic(@Value("${spring.kafka.topics.sales-batch-dtl.name}") String topic,
-                                       @Value("${spring.kafka.default-partitions}") Integer partitions,
-                                       @Value("${spring.kafka.replications}") Integer replications) {
-        return TopicBuilder.name(topic)
-                .partitions(partitions)
-                .replicas(replications)
-                .build();
-    }
-
 
     private RecoveringBatchErrorHandler retryingBatchErrorHandler() {
         RecoveringBatchErrorHandler handler = new RecoveringBatchErrorHandler(this.deadLetterPublishingRecoverer(), new FixedBackOff(3000L, this.maxRetry));

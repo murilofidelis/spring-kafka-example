@@ -38,19 +38,7 @@ public class LagAnalyzerService {
     public Map<TopicPartition, Long> analyzeLag(String groupId, String topicName, int numPartition) throws ExecutionException, InterruptedException {
         Map<TopicPartition, Long> consumerGrpOffsets = getConsumerGrpOffsets(groupId, topicName, numPartition);
         Map<TopicPartition, Long> producerOffsets = getProducerOffsets(consumerGrpOffsets);
-        Map<TopicPartition, Long> lags = computeLags(consumerGrpOffsets, producerOffsets);
-        log.info("================================================================================================================================================");
-        for (Map.Entry<TopicPartition, Long> lagEntry : lags.entrySet()) {
-            String topic = lagEntry.getKey().topic();
-            int partition = lagEntry.getKey().partition();
-            Long lag = lagEntry.getValue();
-            log.info("Lag for topic = {}, partition = {}, groupId = {} is {}",
-                    topic,
-                    partition,
-                    groupId,
-                    lag);
-        }
-        return lags;
+        return computeLags(consumerGrpOffsets, producerOffsets);
     }
 
     private Map<TopicPartition, Long> getConsumerGrpOffsets(String groupId, String topicName, int numPartition) throws ExecutionException, InterruptedException {
