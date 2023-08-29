@@ -46,13 +46,16 @@ spring:
     max-retry: 3
     replications: 3
     default-partitions: 3
-    max-poll-records: 500
-    max-poll-interval-ms: 120000
     consumer:
       auto-offset-reset: earliest
       enable-auto-commit: true
-      max-poll-records: 100
+      max-poll-records: 300
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       group-id: sales-group
+    producer:
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     topics:
       sales:
         name: sales

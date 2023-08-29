@@ -17,7 +17,6 @@ import java.util.List;
 @Slf4j
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class SaleServiceImpl implements SaleService {
 
     private final SaleMapper mapper;
@@ -30,6 +29,7 @@ public class SaleServiceImpl implements SaleService {
     }
 
     @Override
+    @Transactional
     public void save(SaleDTO dto) {
         Throwable error = null;
         try {
@@ -49,12 +49,22 @@ public class SaleServiceImpl implements SaleService {
                 dto.getDescription(),
                 dto.getBrand(),
                 dto.getCodUser(),
-                dto.getPrice()) || isaProductMock(dto)) {
+                dto.getPrice())) {
             throw new InvalidDataException("invalid data");
+        }
+        if (exists(dto)) {
+            throw new InvalidDataException("Product exists: " + dto.getCodProduct());
+        }
+        if (isProductMock(dto)) {
+            throw new InvalidDataException("Product invalid: " + dto.getCodProduct());
         }
     }
 
-    private boolean isaProductMock(SaleDTO dto) {
+    private boolean exists(SaleDTO dto) {
+        return repository.existsByCodProduct(dto.getCodProduct());
+    }
+
+    private boolean isProductMock(SaleDTO dto) {
         return "COD-100".equals(dto.getCodProduct()) || "COD-150".equals(dto.getCodProduct()) || "COD-200".equals(dto.getCodProduct());
     }
 
