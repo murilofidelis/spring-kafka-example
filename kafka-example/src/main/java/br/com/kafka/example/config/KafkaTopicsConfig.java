@@ -6,6 +6,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.kafka.config.TopicBuilder;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Configuration
 public class KafkaTopicsConfig {
 
@@ -16,6 +19,7 @@ public class KafkaTopicsConfig {
         return TopicBuilder.name(topic)
                 .partitions(partitions)
                 .replicas(replications)
+                .configs(getConfigs())
                 .build();
     }
 
@@ -36,6 +40,7 @@ public class KafkaTopicsConfig {
         return TopicBuilder.name(topic)
                 .partitions(partitions)
                 .replicas(replications)
+                .configs(getConfigs())
                 .build();
     }
 
@@ -47,5 +52,11 @@ public class KafkaTopicsConfig {
                 .partitions(partitions)
                 .replicas(replications)
                 .build();
+    }
+
+    private Map<String, String> getConfigs() {
+        Map<String, String> configs = new HashMap<>();
+        configs.put("retention.ms", "10800000");
+        return configs;
     }
 }

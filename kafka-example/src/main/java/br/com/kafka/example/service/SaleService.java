@@ -8,6 +8,8 @@ public interface SaleService {
 
     List<SaleDTO> getAll();
 
-    void save(SaleDTO dto);
+    void save(SaleDTO sales);
+
+    void save(List<SaleDTO> sales);
 
 }

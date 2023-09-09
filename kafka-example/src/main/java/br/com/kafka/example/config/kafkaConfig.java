@@ -70,13 +70,13 @@ public class kafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, SaleDTO> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, SaleDTO> factory = new ConcurrentKafkaListenerContainerFactory<>();
         Map<String, Object> props = new HashMap<>(kafkaProperties.buildConsumerProperties());
-        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.FALSE);
-        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 100);
-        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 60000);
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, Boolean.TRUE);
+        props.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 500);
+        props.put(ConsumerConfig.MAX_POLL_INTERVAL_MS_CONFIG, 1200000);
         DefaultKafkaConsumerFactory<String, SaleDTO> kafkaConsumerFactory = new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), new JsonDeserializer<>(SaleDTO.class, false));
         factory.setConsumerFactory(kafkaConsumerFactory);
         factory.setErrorHandler(seekToCurrentErrorHandler());
-        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.MANUAL_IMMEDIATE);
+        factory.getContainerProperties().setAckMode(ContainerProperties.AckMode.RECORD);
         factory.getContainerProperties().setSyncCommits(Boolean.TRUE);
         return factory;
     }

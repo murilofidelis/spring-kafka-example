@@ -4,6 +4,7 @@ import br.com.kafka.example.dto.SaleDTO;
 import br.com.kafka.example.service.SaleService;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -17,6 +18,7 @@ import java.math.BigDecimal;
 import java.time.LocalTime;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequestMapping("sale")
 @RequiredArgsConstructor
@@ -41,9 +43,9 @@ public class SaleResource {
             dto.setDescription("PRODUCT-" + i);
             dto.setPrice(new BigDecimal("10"));
             dto.setHour(LocalTime.now());
-            Thread.sleep(20);
             template.send(topic, dto);
         }
+        log.info("Publish finish...");
     }
 
 }

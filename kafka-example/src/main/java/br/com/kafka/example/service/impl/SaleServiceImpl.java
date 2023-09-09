@@ -30,16 +30,16 @@ public class SaleServiceImpl implements SaleService {
 
     @Override
     @Transactional
-    public void save(SaleDTO dto) {
-        Throwable error = null;
+    public void save(SaleDTO sales) {
+        repository.save(mapper.toEntity(sales));
+    }
+
+    @Override
+    public void save(List<SaleDTO> sales) {
         try {
-            validated(dto);
-            repository.save(mapper.toEntity(dto));
-        } catch (Exception ex) {
-            log.error("ERROR SaleServiceImpl: {}", ex.getMessage());
-            error = ex;
-        } finally {
-            saleDetailService.saveDetail(dto, error);
+           repository.insertBatch(sales);
+        } catch (Exception exception) {
+            log.error("Error: ", exception);
         }
     }
 

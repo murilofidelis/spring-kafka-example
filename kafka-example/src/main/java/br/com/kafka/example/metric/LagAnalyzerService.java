@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsOptions;
 import org.apache.kafka.clients.admin.ListConsumerGroupOffsetsResult;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.consumer.OffsetAndMetadata;
+import org.apache.kafka.common.PartitionInfo;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.stereotype.Service;
 
@@ -30,24 +31,24 @@ public class LagAnalyzerService {
     private final KafkaConsumer<String, String> consumer;
 
     @SneakyThrows
-    public long getLag(String groupId, String topicName, int numPartition) {
-        Map<TopicPartition, Long> topicPartitionLongMap = analyzeLag(groupId, topicName, numPartition);
+    public long getLag(String groupId, String topicName) {
+        Map<TopicPartition, Long> topicPartitionLongMap = analyzeLag(groupId, topicName);
         return topicPartitionLongMap.values().stream().mapToLong(lag -> lag).sum();
     }
 
-    public Map<TopicPartition, Long> analyzeLag(String groupId, String topicName, int numPartition) throws ExecutionException, InterruptedException {
-        Map<TopicPartition, Long> consumerGrpOffsets = getConsumerGrpOffsets(groupId, topicName, numPartition);
+    public Map<TopicPartition, Long> analyzeLag(String groupId, String topicName) throws ExecutionException, InterruptedException {
+        Map<TopicPartition, Long> consumerGrpOffsets = getConsumerGrpOffsets(groupId, topicName);
         Map<TopicPartition, Long> producerOffsets = getProducerOffsets(consumerGrpOffsets);
         return computeLags(consumerGrpOffsets, producerOffsets);
     }
 
-    private Map<TopicPartition, Long> getConsumerGrpOffsets(String groupId, String topicName, int numPartition) throws ExecutionException, InterruptedException {
-        ListConsumerGroupOffsetsOptions topicPartitions = getListConsumerGroupOffsetsOptions(topicName, numPartition);
+    private Map<TopicPartition, Long> getConsumerGrpOffsets(String groupId, String topicName) throws ExecutionException, InterruptedException {
+        ListConsumerGroupOffsetsOptions topicPartitions = getListConsumerGroupOffsetsOptions(topicName);
         ListConsumerGroupOffsetsResult info = adminClient.listConsumerGroupOffsets(groupId, topicPartitions);
         Map<TopicPartition, OffsetAndMetadata> metadataMap = info.partitionsToOffsetAndMetadata().get();
         Map<TopicPartition, Long> groupOffset = new HashMap<>();
         for (Map.Entry<TopicPartition, OffsetAndMetadata> entry : metadataMap.entrySet()) {
-            if (topicName.equals(entry.getKey().topic())) {
+            if (entry.getKey() != null && entry.getValue() != null) {
                 TopicPartition key = entry.getKey();
                 OffsetAndMetadata metadata = entry.getValue();
                 groupOffset.putIfAbsent(new TopicPartition(key.topic(), key.partition()), metadata.offset());
@@ -56,10 +57,11 @@ public class LagAnalyzerService {
         return groupOffset;
     }
 
-    private ListConsumerGroupOffsetsOptions getListConsumerGroupOffsetsOptions(String topicName, int numPartition) {
+    private ListConsumerGroupOffsetsOptions getListConsumerGroupOffsetsOptions(String topicName) {
+        List<PartitionInfo> partitions = consumer.partitionsFor(topicName);
         ListConsumerGroupOffsetsOptions listConsumerGroupOffsetsOptions = new ListConsumerGroupOffsetsOptions();
         List<TopicPartition> topicPartitions = new ArrayList<>();
-        for (int partition = 0; partition < numPartition; partition++) {
+        for (int partition = 0; partition < partitions.size(); partition++) {
             topicPartitions.add(new TopicPartition(topicName, partition));
         }
         listConsumerGroupOffsetsOptions.topicPartitions(topicPartitions);

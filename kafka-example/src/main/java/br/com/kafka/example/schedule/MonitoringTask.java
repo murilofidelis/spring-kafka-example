@@ -15,9 +15,9 @@ public class MonitoringTask {
 
     private final LagAnalyzerService lagAnalyzerService;
 
-    @Scheduled(fixedDelay = 60000L)
+    @Scheduled(fixedDelay = 10000L)
     public void liveLagAnalysis() throws ExecutionException, InterruptedException {
-        long lag = lagAnalyzerService.getLag("sales-group", "sales", 6);
+        long lag = lagAnalyzerService.getLag("sales-group-batch", "sales-batch");
         log.info("LAG: {}", lag);
         if (lag == 0) {
             log.info("------------------FIM----------------");
